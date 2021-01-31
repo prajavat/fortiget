@@ -8,7 +8,7 @@
   tasks:
   - name: Configure central management.
     fortios_system_central_management:
-      vdom:  18.130.43.52
+      vdom:  "{{ vdom }}"
       system_central_management:
         allow_monitor: "enable"
         allow_push_configuration: "enable"
@@ -17,19 +17,15 @@
         enc_algorithm: "default"
         fmg: 18.130.43.52
         fmg_source_ip: 18.130.43.52
-        # fmg_source_ip6: "<your_own_value>"
         include_default_servers: "enable"
         mode: "normal"
         schedule_config_restore: "enable"
         schedule_script_restore: "enable"
-        # serial_number: "<your_own_value>"
         server_list:
          -
             addr_type: "ipv4"
-            # fqdn: "<your_own_value>"
             id:  "19"
             server_address: 18.130.43.52
-            # server_address6: "<your_own_value>"
             server_type: "update"
         type: "fortimanager"
-        vdom: 18.130.43.52
+        vdom: "{{ vdom }}"
