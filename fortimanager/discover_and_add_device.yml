@@ -62,25 +62,18 @@
         msg: 'the device is not installed correctly'
       failed_when: taskinfo.meta.data.state == 'error' and 'devsnexist' not in taskinfo.meta.data.line[0].detail
 
-    - name: CREATE BASIC POLICY PACKAGE
+    - name: ADD PACKAGE WITH TARGETS
       fmgr_fwpol_package:
-        adom: '{{ adom }}'
         mode: "add"
+        adom: "{{ adom }}"
         name: "FortiOS-Policy"
         object_type: "pkg"
+        inspection_mode: "flow"
+        ngfw_mode: "profile-based"
+        scope_members: "{{ probed_device.meta.data.device.name }}"
       register: create_policy
 
     - name: Debug POLICY PACKAGE
       debug:
         msg: "{{ create_policy }}"
-
-    - name: ADD PACKAGE WITH TARGETS
-      fmgr_fwpol_package:
-        mode: "add"
-        adom: "{{ adom }}"
-        name: "FortiOS-Policy2"
-        object_type: "pkg"
-        inspection_mode: "flow"
-        ngfw_mode: "profile-based"
-        scope_members: "{{ probed_device.meta.data.device.name }}"
 
