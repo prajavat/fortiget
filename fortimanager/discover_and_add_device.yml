@@ -64,7 +64,7 @@
 
     - name: CREATE BASIC POLICY PACKAGE
       fmgr_fwpol_package:
-        adom: "ansible"
+        adom: '{{ adom }}'
         mode: "add"
         name: "FortiOS-Policy"
         object_type: "pkg"
