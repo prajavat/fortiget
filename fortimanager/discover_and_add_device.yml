@@ -1,10 +1,8 @@
-# test with FortiManager Galaxy 1.0.2
 - name: Discover and Add Fortigate device
   hosts: fortimanagers
   gather_facts: no
   connection: httpapi
-  # collections:
-  #   - fortinet.fortimanager
+
   vars:
     ansible_httpapi_use_ssl: True
     ansible_httpapi_validate_certs: False
@@ -64,17 +62,25 @@
         msg: 'the device is not installed correctly'
       failed_when: taskinfo.meta.data.state == 'error' and 'devsnexist' not in taskinfo.meta.data.line[0].detail
 
-    # - name: Import Device Policy
-    #   fmgr_provisioning:
-    #     host: "{{ probed_device.meta.data.device.ip }}"
-    #     username: "{{ probed_device.meta.data.device.adm_pass }}"
-    #     password: "{{ probed_device.meta.data.device.adm_pass }}"
-    #     adom: '{{ adom }}'
-    #     vdom: '{{ adom }}'
-    #     policy_package: "default"
-    #     name: "{{ probed_device.meta.data.device.name }}"
-    #     serial: "{{ probed_device.meta.data.device.sn }}"
-    #     platform: "{{ probed_device.meta.data.device.platform_str }}"
-    #     description: "Provisioned by Ansible"
-    #     os_version: "{{ probed_device.meta.data.device.os_ver }}"
-    #     os_type: "{{ probed_device.meta.data.device.os_type }}"
+    - name: CREATE BASIC POLICY PACKAGE
+      community.network.fmgr_fwpol_package:
+        adom: "ansible"
+        mode: "add"
+        name: "FortiOS-Policy"
+        object_type: "pkg"
+      register: create_policy
+
+    - name: Debug POLICY PACKAGE
+      debug:
+        msg: "{{ create_policy }}"
+
+    # - name: ADD PACKAGE WITH TARGETS
+    #   community.network.fmgr_fwpol_package:
+    #     mode: "add"
+    #     adom: "{{ adom }}"
+    #     name: "FortiOS-Policy"
+    #     object_type: "pkg"
+    #     inspection_mode: "flow"
+    #     ngfw_mode: "profile-based"
+    #     scope_members: "{{ probed_device.meta.data.device.name }}"
+
