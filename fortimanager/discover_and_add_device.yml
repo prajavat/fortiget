@@ -63,7 +63,7 @@
       failed_when: taskinfo.meta.data.state == 'error' and 'devsnexist' not in taskinfo.meta.data.line[0].detail
 
     - name: CREATE BASIC POLICY PACKAGE
-      community.network.fmgr_fwpol_package:
+      fmgr_fwpol_package:
         adom: "ansible"
         mode: "add"
         name: "FortiOS-Policy"
@@ -75,7 +75,7 @@
         msg: "{{ create_policy }}"
 
     # - name: ADD PACKAGE WITH TARGETS
-    #   community.network.fmgr_fwpol_package:
+    #   fmgr_fwpol_package:
     #     mode: "add"
     #     adom: "{{ adom }}"
     #     name: "FortiOS-Policy"
