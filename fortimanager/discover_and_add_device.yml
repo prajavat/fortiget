@@ -74,13 +74,13 @@
       debug:
         msg: "{{ create_policy }}"
 
-    # - name: ADD PACKAGE WITH TARGETS
-    #   fmgr_fwpol_package:
-    #     mode: "add"
-    #     adom: "{{ adom }}"
-    #     name: "FortiOS-Policy"
-    #     object_type: "pkg"
-    #     inspection_mode: "flow"
-    #     ngfw_mode: "profile-based"
-    #     scope_members: "{{ probed_device.meta.data.device.name }}"
+    - name: ADD PACKAGE WITH TARGETS
+      fmgr_fwpol_package:
+        mode: "add"
+        adom: "{{ adom }}"
+        name: "FortiOS-Policy"
+        object_type: "pkg"
+        inspection_mode: "flow"
+        ngfw_mode: "profile-based"
+        scope_members: "{{ probed_device.meta.data.device.name }}"
 
