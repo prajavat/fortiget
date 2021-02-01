@@ -78,7 +78,7 @@
       fmgr_fwpol_package:
         mode: "add"
         adom: "{{ adom }}"
-        name: "FortiOS-Policy"
+        name: "FortiOS-Policy2"
         object_type: "pkg"
         inspection_mode: "flow"
         ngfw_mode: "profile-based"
