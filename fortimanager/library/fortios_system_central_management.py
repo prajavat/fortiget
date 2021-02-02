@@ -33,23 +33,31 @@ description:
 version_added: "2.8"
 author:
     - Link Zheng (@chillancezen)
-    - Jie Xue (@JieX19)
     - Hongbin Lu (@fgtdev-hblu)
     - Frank Shen (@frankshen01)
+    - Jie Xue (@JieX19)
     - Miguel Angel Munoz (@mamunozgonzalez)
     - Nicolas Thomas (@thomnico)
 notes:
     - Legacy fortiosapi has been deprecated, httpapi is the preferred way to run playbooks
-
 requirements:
     - ansible>=2.9.0
 options:
-    access_token:
+    host:
         description:
-            - Token-based authentication.
-              Generated from GUI of Fortigate.
+            - FortiOS or FortiGate IP address.
         type: str
         required: false
+    username:
+        description:
+            - FortiOS or FortiGate username.
+        type: str
+        required: false
+    password:
+        description:
+            - FortiOS or FortiGate password.
+        type: str
+        default: ""
     vdom:
         description:
             - Virtual domain, among those defined previously. A vdom is a
@@ -57,7 +65,17 @@ options:
               used as a different unit.
         type: str
         default: root
-
+    https:
+        description:
+            - Indicates if the requests towards FortiGate must use HTTPS protocol.
+        type: bool
+        default: true
+    ssl_verify:
+        description:
+            - Ensures FortiGate certificate must be verified by a proper CA.
+        type: bool
+        default: true
+        version_added: 2.9
     system_central_management:
         description:
             - Configure central management.
@@ -239,7 +257,6 @@ EXAMPLES = '''
             server_type: "update"
         type: "fortimanager"
         vdom: "<your_own_value> (source system.vdom.name)"
-
 '''
 
 RETURN = '''
@@ -304,8 +321,22 @@ version:
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.connection import Connection
 from ansible_collections.fortinet.fortios.plugins.module_utils.fortios.fortios import FortiOSHandler
-from ansible_collections.fortinet.fortios.plugins.module_utils.fortios.fortios import check_legacy_fortiosapi
 from ansible_collections.fortinet.fortios.plugins.module_utils.fortimanager.common import FAIL_SOCKET_MSG
+
+
+def login(data, fos):
+    host = data['host']
+    username = data['username']
+    password = data['password']
+    ssl_verify = data['ssl_verify']
+
+    fos.debug('on')
+    if 'https' in data and not data['https']:
+        fos.https('off')
+    else:
+        fos.https('on')
+
+    fos.login(host, username, password, verify=ssl_verify)
 
 
 def filter_system_central_management_data(json):
@@ -357,8 +388,6 @@ def fortios_system(data, fos):
 
     if data['system_central_management']:
         resp = system_central_management(data, fos)
-    else:
-        fos._module.fail_json(msg='missing task body: %s' % ('system_central_management'))
 
     return not is_successful_status(resp), \
         resp['status'] == "success" and \
@@ -367,10 +396,13 @@ def fortios_system(data, fos):
 
 
 def main():
-    mkeyname = None
     fields = {
-        "access_token": {"required": False, "type": "str", "no_log": True},
+        "host": {"required": False, "type": "str"},
+        "username": {"required": False, "type": "str"},
+        "password": {"required": False, "type": "str", "default": "", "no_log": True},
         "vdom": {"required": False, "type": "str", "default": "root"},
+        "https": {"required": False, "type": "bool", "default": True},
+        "ssl_verify": {"required": False, "type": "bool", "default": True},
         "system_central_management": {
             "required": False, "type": "dict", "default": None,
             "options": {
@@ -431,22 +463,35 @@ def main():
         }
     }
 
-    check_legacy_fortiosapi()
     module = AnsibleModule(argument_spec=fields,
                            supports_check_mode=False)
 
+    # legacy_mode refers to using fortiosapi instead of HTTPAPI
+    legacy_mode = 'host' in module.params and module.params['host'] is not None and \
+                  'username' in module.params and module.params['username'] is not None and \
+                  'password' in module.params and module.params['password'] is not None
+
     versions_check_result = None
-    if module._socket_path:
-        connection = Connection(module._socket_path)
-        if 'access_token' in module.params:
-            connection.set_option('access_token', module.params['access_token'])
+    if not legacy_mode:
+        if module._socket_path:
+            connection = Connection(module._socket_path)
+            fos = FortiOSHandler(connection)
 
-        fos = FortiOSHandler(connection, module, mkeyname)
-
-        is_error, has_changed, result = fortios_system(module.params, fos)
-        versions_check_result = connection.get_system_version()
+            is_error, has_changed, result = fortios_system(module.params, fos)
+            versions_check_result = connection.get_system_version()
+        else:
+            module.fail_json(**FAIL_SOCKET_MSG)
     else:
-        module.fail_json(**FAIL_SOCKET_MSG)
+        try:
+            from fortiosapi import FortiOSAPI
+        except ImportError:
+            module.fail_json(msg="fortiosapi module is required")
+
+        fos = FortiOSAPI()
+
+        login(module.params, fos)
+        is_error, has_changed, result = fortios_system(module.params, fos)
+        fos.logout()
 
     if versions_check_result and versions_check_result['matched'] is False:
         module.warn("Ansible has detected version mismatch between FortOS system and galaxy, see more details by specifying option -vvv")

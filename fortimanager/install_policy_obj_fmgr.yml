@@ -1,0 +1,39 @@
+- hosts: fortimanagers
+  connection: httpapi
+  vars:
+     ansible_httpapi_use_ssl: True
+     ansible_httpapi_validate_certs: False
+     ansible_httpapi_port: 443
+     adom: root
+     obj_policy_name: AWS-HA-Active
+  tasks:
+  - name: REQUESTING /SECURITYCONSOLE/INSTALL/PACKAGE
+    fmgr_securityconsole_install_package:
+      loose_validation: False
+      workspace_locking_adom: '{{ adom }}'
+      workspace_locking_timeout: 300
+      method: exec
+      params:
+          -
+            data:
+                adom: '{{ adom }}'
+                pkg: '{{ obj_policy_name }}'
+                scope:
+                  -
+                      name: AWS-HA-Active
+                      vdom: '{{ adom }}'
+    register: installing_policy
+
+  - name: Print version
+    debug:
+      msg: "{{ installing_policy }}"
+
+  - name: query long-term task status
+    fmgr_task_task_obj:
+      method: get
+      url_params:
+          task: "{{ installing_policy.meta.data.task }}"
+    register: taskinfo
+    until: taskinfo.meta.data.percent == 100
+    retries: 30
+    delay: 10

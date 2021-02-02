@@ -7,7 +7,7 @@
     ansible_httpapi_use_ssl: True
     ansible_httpapi_validate_certs: False
     ansible_httpapi_port: 443
-    device_ip: 18.132.20.223
+    device_ip: 18.134.18.23
     device_user: admin
     device_password: mohsin@642#
     adom: root
@@ -62,18 +62,20 @@
         msg: 'the device is not installed correctly'
       failed_when: taskinfo.meta.data.state == 'error' and 'devsnexist' not in taskinfo.meta.data.line[0].detail
 
-    - name: ADD PACKAGE WITH TARGETS
-      fmgr_fwpol_package:
-        mode: "add"
-        adom: "{{ adom }}"
-        name: "FortiOS-Policy"
-        object_type: "pkg"
-        inspection_mode: "flow"
-        ngfw_mode: "profile-based"
-        scope_members: "{{ probed_device.meta.data.device.name }}"
-      register: create_policy
-
-    - name: Debug POLICY PACKAGE
-      debug:
-        msg: "{{ create_policy }}"
+    - name: Import objects from device to ADOM, or from ADOM to Global.
+      fmgr_securityconsole_import_dev_objs:
+         bypass_validation: False
+         workspace_locking_adom: "{{ adom }}"
+         workspace_locking_timeout: 300
+         securityconsole_import_dev_objs:
+            add_mappings: enable
+            adom: "{{ adom }}"
+            dst_name: "{{ probed_device.meta.data.device.name }}"
+            dst_parent: "{{ adom }}"
+            if_all_objs: all
+            if_all_policy: enable
+            import_action: do
+            name: "{{ probed_device.meta.data.device.name }}"
+            position: top
+            vdom: "{{ adom }}"
 

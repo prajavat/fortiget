@@ -1,0 +1,20 @@
+- hosts: localhost
+  vars:
+   host:  "18.134.18.23"
+   username: "admin"
+   password: "mohsin@642#"
+   vdom: "root"
+  tasks:
+  - name: fortimanager management settings
+    fortiosconfig:
+     config: "system central-management"
+     action: "put"
+     host:  "{{ host }}"  
+     username: "{{ username }}"  
+     password: "{{ password }}"
+     vdom: "root"
+     https: True
+     ssl_verify: False
+     config_parameters:
+        "type": "fortimanager"
+        fmg: "18.130.43.52"
