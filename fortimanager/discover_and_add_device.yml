@@ -62,20 +62,20 @@
         msg: 'the device is not installed correctly'
       failed_when: taskinfo.meta.data.state == 'error' and 'devsnexist' not in taskinfo.meta.data.line[0].detail
 
-    - name: Import objects from device to ADOM, or from ADOM to Global.
-      fmgr_securityconsole_import_dev_objs:
-         bypass_validation: False
-         workspace_locking_adom: "{{ adom }}"
-         workspace_locking_timeout: 300
-         securityconsole_import_dev_objs:
-            add_mappings: enable
-            adom: "{{ adom }}"
-            dst_name: "{{ probed_device.meta.data.device.name }}"
-            dst_parent: "{{ adom }}"
-            if_all_objs: all
-            if_all_policy: enable
-            import_action: do
-            name: "{{ probed_device.meta.data.device.name }}"
-            position: top
-            vdom: "{{ adom }}"
+    # - name: Import objects from device to ADOM, or from ADOM to Global.
+    #   fmgr_securityconsole_import_dev_objs:
+    #      bypass_validation: False
+    #      workspace_locking_adom: "{{ adom }}"
+    #      workspace_locking_timeout: 300
+    #      securityconsole_import_dev_objs:
+    #         add_mappings: enable
+    #         adom: "{{ adom }}"
+    #         dst_name: "{{ probed_device.meta.data.device.name }}"
+    #         dst_parent: "{{ adom }}"
+    #         if_all_objs: all
+    #         if_all_policy: enable
+    #         import_action: do
+    #         name: "{{ probed_device.meta.data.device.name }}"
+    #         position: top
+    #         vdom: "{{ adom }}"
 

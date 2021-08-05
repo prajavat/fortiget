@@ -1,0 +1,18 @@
+- hosts: fortimanagers
+  connection: httpapi
+  vars:
+    ansible_httpapi_use_ssl: True
+    ansible_httpapi_validate_certs: False
+    adom: root
+
+  tasks:
+    - fmgr_system_route:
+        bypass_validation: False
+        workspace_locking_adom: "{{ adom }}"
+        workspace_locking_timeout: 300
+        state: present
+        system_route:
+            device: port3
+            dst: "0.0.0.0 0.0.0.0"
+            gateway: "10.105.15.1"
+            seq_num: 0

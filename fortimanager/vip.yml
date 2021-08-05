@@ -1,0 +1,23 @@
+- hosts: fortimanagers
+  connection: httpapi
+  vars:
+    ansible_httpapi_use_ssl: True
+    ansible_httpapi_validate_certs: False
+    adom: root
+
+  tasks:
+    - name: EDIT FMGR_FIREWALL_VIP PNAT
+      fmgr_fwobj_vip:
+        name: "Basic PNAT Map Port 10443"
+        mode: "set"
+        adom: "{{ adom }}"
+        type: "fqdn"
+        extip: "0.0.0.0"
+        extport: "10443"
+        extintf: "port1"
+        portforward: "enable"
+        protocol: "tcp"
+        mapped_addr: "exaple.com"
+        mappedport: "443"
+        comment: "Created by Ansible"
+        color: "17"

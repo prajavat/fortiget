@@ -1,0 +1,71 @@
+- hosts: fortimanagers
+  connection: httpapi
+  vars:
+    ansible_httpapi_use_ssl: True
+    ansible_httpapi_validate_certs: False
+    adom: root
+    obj_policy_name: AWS-HA-Active
+
+  tasks:
+    - name: Configure URL filter lists.
+      fmgr_webfilter_urlfilter:
+        bypass_validation: False
+        workspace_locking_adom: "{{ adom }}"
+        workspace_locking_timeout: 300
+        adom: "{{ adom }}"
+        state: present
+        webfilter_urlfilter:
+            comment: "Created by Ansible"
+            entries:
+              -
+                  id: 2
+                  action: allow
+                  status: enable
+                  type: wildcard
+                  url: "*example.com/*"
+              -
+                  id: 1
+                  action: allow
+                  status: enable
+                  type: wildcard
+                  url: "*helloworld.com/*"
+              -
+                  id: 3
+                  action: block
+                  status: enable
+                  type: wildcard
+                  url: "*"
+            id: 1
+            name: "Get-URLs-list"
+    - name: Create a web filter profile referencing a web url filter
+      fmgr_webfilter_profile:
+        bypass_validation: True
+        adom: "{{ adom }}"
+        state: present
+        webfilter_profile:
+          comment: Created with ansible
+          name: web-filter-profile-001
+          web:
+            urlfilter-table: 1
+          web-url-log: enable
+          post-action: block
+
+    - name: ADD VERY BASIC IPV4 POLICY WITH NO NAT (WIDE OPEN)
+      fmgr_fwpol_ipv4:
+        mode: "set"
+        adom: '{{ adom }}'
+        package_name: '{{ obj_policy_name }}'
+        name: "Web-filter-policy"
+        comments: "Created by Ansible"
+        action: "accept"
+        dstaddr: "all"
+        srcaddr: "all"
+        dstintf: "port1"
+        srcintf: "port2"
+        logtraffic: "utm"
+        service: "ALL"
+        schedule: "always"
+        utm_status: enable
+        webfilter_profile: web-filter-profile-001
+      ignore_errors: yes
+      ignore_unreachable: yes

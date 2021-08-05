@@ -1,0 +1,28 @@
+- hosts: fortimanagers
+  connection: httpapi
+  vars:
+    ansible_httpapi_use_ssl: True
+    ansible_httpapi_validate_certs: False
+    adom: root
+    obj_policy_name: AWS-HA-Active
+
+  tasks:
+    - name: Configure IPv4 policies.
+      fmgr_pkg_firewall_policy:
+          adom: '{{ adom }}'
+          pkg: '{{ obj_policy_name }}'
+          state: present
+          pkg_firewall_policy:
+            action: accept
+            comments: "Created by Ansible"
+            dstaddr: "all"
+            dstintf: port1
+            name: Web-filter
+            nat: enable
+            policyid: 13
+            service: "ALL"
+            srcaddr: "all"
+            srcintf: port2
+            status: enable
+            utm-status: enable
+            webfilter-profile: web-filter-profile-001

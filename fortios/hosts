@@ -2,7 +2,7 @@
 18.130.43.52 ansible_host=18.130.43.52 ansible_user="admin" ansible_password="mohsin@642#"
 
 [fortios]
-18.134.18.23 ansible_host=18.134.18.23 ansible_user="admin" ansible_password="mohsin@642#"
+18.168.5.169 ansible_host=18.168.5.169 ansible_user="admin" ansible_password="mohsin@642#"
 
 [fortimanagers:vars]
 ansible_network_os=fortinet.fortimanager.fortimanager

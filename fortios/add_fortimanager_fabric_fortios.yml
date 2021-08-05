@@ -1,20 +1,41 @@
-- hosts: localhost
+- hosts: fortios
+  connection: httpapi
   vars:
-   host:  "18.134.18.23"
-   username: "admin"
-   password: "mohsin@642#"
-   vdom: "root"
+  #  host:  "18.134.18.23"
+  #  username: "admin"
+  #  password: "mohsin@642#"
+   ansible_httpapi_use_ssl: yes
+   ansible_httpapi_validate_certs: no
+   ansible_httpapi_port: 8443
+   vdom: root
   tasks:
-  - name: fortimanager management settings
-    fortiosconfig:
-     config: "system central-management"
-     action: "put"
-     host:  "{{ host }}"  
-     username: "{{ username }}"  
-     password: "{{ password }}"
-     vdom: "root"
-     https: True
-     ssl_verify: False
-     config_parameters:
-        "type": "fortimanager"
-        fmg: "18.130.43.52"
+  # - name: fortimanager management settings
+  #   fortiosconfig:
+  #    config: "system central-management"
+  #    action: "put"
+  #    host:  "{{ host }}"  
+  #    username: "{{ username }}"  
+  #    password: "{{ password }}"
+  #    vdom: "root"
+  #    https: True
+  #    ssl_verify: False
+  #    config_parameters:
+  #       "type": "fortimanager"
+  #       fmg: "18.130.43.52"
+  - name: Configure central management.
+    fortios_system_central_management:
+      vdom: root
+      system_central_management:
+        allow_monitor: "enable"
+        allow_push_configuration: "enable"
+        allow_push_firmware: "enable"
+        allow_remote_firmware_upgrade: "enable"
+        fmg: "3.9.21.231"
+        mode: "normal"
+        server_list:
+         -
+            addr_type: "ipv4"
+            fqdn: "3.9.21.231"
+            id:  "1"
+        type: "fortimanager"
+        vdom: root

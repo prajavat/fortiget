@@ -1,5 +1,6 @@
 - hosts: fortimanagers
   connection: httpapi
+  gather_facts: false
   vars:
      ansible_httpapi_use_ssl: True
      ansible_httpapi_validate_certs: False
@@ -7,49 +8,66 @@
      adom: root
      obj_policy_name: AWS-HA-Active
   tasks:
-  - name: ADD VERY BASIC IPV4 POLICY WITH NO NAT (WIDE OPEN)
-    fmgr_fwpol_ipv4:
-      mode: "set"
-      adom: '{{ adom }}'
-      package_name: '{{ obj_policy_name }}'
-      name: "Basic_IPv4_Policy"
-      comments: "Created by Ansible"
-      action: "accept"
-      dstaddr: "all"
-      srcaddr: "all"
-      dstintf: "port1"
-      srcintf: "port2"
-      logtraffic: "utm"
-      service: "ALL"
-      schedule: "always"
-    ignore_errors: yes
-    ignore_unreachable: yes
+    - name: Create new Firewall Address (Dynamic)
+      fmgr_firewall_address:
+        bypass_validation: true
+        adom: "root"
+        state: present
+        firewall_address:
+          name: host_dyn_002
+          type: dynamic
+          sdn: Test-aws-SDN
+          sdn-addr-type: public
+          filter: InstanceType=t2.medium
+          color: 6
+          comment: Created with FortiManager Ansible
+          
+    - name: ADD VERY BASIC IPV4 POLICY WITH NO NAT (WIDE OPEN)
+      fmgr_fwpol_ipv4:
+        mode: "set"
+        adom: '{{ adom }}'
+        package_name: '{{ obj_policy_name }}'
+        name: "SDN-Policy"
+        comments: "Created by Ansible"
+        action: "accept"
+        dstaddr: "host_dyn_002"
+        srcaddr: "all"
+        dstintf: "port1"
+        srcintf: "port2"
+        logtraffic: "utm"
+        service: "ALL"
+        schedule: "always"
+      ignore_errors: yes
+      ignore_unreachable: yes
 
-  - name: create policy in the object
-    fmgr_generic:
-      method: set
-      params:
-          - url: "/pm/config/adom/{{ adom }}/pkg/{{ obj_policy_name }}/firewall/policy"
-            data:
-              name: "policy_one"
-              action: "accept"
-              srcintf: 'port1'
-              dstintf: 'port2'
-              srcaddr: "all"
-              dstaddr: "all"
-              service: "ALL"
-              schedule: "always"
-    register: policyinfo
-    failed_when: policyinfo.rc != 0 and policyinfo.rc != -9998
+    - name: Configure external resource.
+      fmgr_system_externalresource:
+          bypass_validation: False
+          adom: '{{ adom }}'
+          state: present
+          system_externalresource:
+            category: 192
+            comments:  "Created by Ansible"
+            name: threat-feeds-ansible
+            refresh-rate: 5
+            resource: https://threat-feed-ansible.s3.eu-west-2.amazonaws.com/block.txt
+            status: enable
+            type: address
 
-  # - name: create an address object
-  #   fmgr_generic:
-  #     method: set
-  #     params:
-  #         - url: "/pm/config/adom/{{ adom }}/obj/firewall/address"
-  #           data:
-  #             - name: "IPMask"
-  #               comment: "address object created via generic ansible module"
-  #               type: "ipmask"
-  #               visibility: "enable"
-  #               subnet: "22.33.44.55/32"  
+    - name: ADD VERY BASIC IPV4 POLICY WITH NO NAT (WIDE OPEN)
+      fmgr_fwpol_ipv4:
+        mode: "set"
+        adom: '{{ adom }}'
+        package_name: '{{ obj_policy_name }}'
+        name: "threat-feeds-ansible"
+        comments: "Created by Ansible"
+        action: "accept"
+        dstaddr: "threat-feeds-ansible"
+        srcaddr: "all"
+        dstintf: "port1"
+        srcintf: "port2"
+        logtraffic: "utm"
+        service: "ALL"
+        schedule: "always"
+      ignore_errors: yes
+      ignore_unreachable: yes

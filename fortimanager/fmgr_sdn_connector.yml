@@ -1,0 +1,29 @@
+- name: Discover and Add Fortigate device
+  hosts: fortimanagers
+  gather_facts: no
+  connection: httpapi
+
+  vars:
+    ansible_httpapi_use_ssl: True
+    ansible_httpapi_validate_certs: False
+    ansible_httpapi_port: 443
+    device_ip: 18.134.18.23
+    device_user: admin
+    device_password: mohsin@642#
+    adom: root
+  tasks:
+   - name: Configure connection to SDN Connector.
+     fmgr_system_sdnconnector:
+        bypass_validation: False
+        workspace_locking_adom: "{{ adom }}"
+        adom: "{{ adom }}"
+        state: present
+        system_sdnconnector:
+           name: "Test-aws-SDN"
+           region: eu-west-2
+           access-key: "AKIA6GQC7FHEZVPIMBWE"
+           secret-key: "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"
+           status: enable
+           type: aws
+           update-interval: 60
+    
